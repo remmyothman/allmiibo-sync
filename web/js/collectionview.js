@@ -152,7 +152,10 @@ export function collectionCsv(collection) {
         item.name ?? '',
         item.id ?? '',
         item.hasLocal ? 'yes' : 'no',
-        item.hasDevice ? 'yes' : 'no',
+        // hasDevice is three-valued: null means no device has ever been
+        // scanned, which is not the same as "not on one". Leave it blank
+        // rather than claiming "no" for the whole collection on a fresh visit.
+        item.hasDevice === true ? 'yes' : item.hasDevice === false ? 'no' : '',
         item.inDatabase ? 'yes' : 'no',
       ]);
     }

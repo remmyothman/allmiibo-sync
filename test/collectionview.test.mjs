@@ -245,11 +245,23 @@ test('collectionCsv quotes fields and escapes embedded quotes', () => {
   assert.match(csv, /"Mario ""Gold"""/);
 });
 
-test('collectionCsv writes "no" for hasDevice when device not yet scanned (null)', () => {
+test('collectionCsv leaves "On device" blank when no device has been scanned', () => {
+  // hasDevice is three-valued: null means no device scan has happened, which
+  // is not the same as "not on one". Claiming "no" for all 949 rows on a fresh
+  // visit would be a lie, so the cell stays empty.
   const col = {
     series: [group(0, 'Test', [item('a', { hasLocal: true, hasDevice: null })])],
   };
   const csv = collectionCsv(col).slice(1);
   const lines = csv.split('\n');
-  assert.match(lines[1], /"yes","no","yes"/, 'hasDevice: null -> "no"');
+  assert.match(lines[1], /"yes","","yes"/, 'hasDevice: null -> blank, not "no"');
+});
+
+test('collectionCsv writes "no" for hasDevice when a device was scanned and lacks it', () => {
+  const col = {
+    series: [group(0, 'Test', [item('a', { hasLocal: true, hasDevice: false })])],
+  };
+  const csv = collectionCsv(col).slice(1);
+  const lines = csv.split('\n');
+  assert.match(lines[1], /"yes","no","yes"/, 'hasDevice: false -> "no"');
 });
